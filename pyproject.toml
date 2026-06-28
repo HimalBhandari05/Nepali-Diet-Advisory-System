@@ -1,0 +1,13 @@
+[project]
+name = "Nepali-Diet-Advisory-System"
+version = "0.1.0"
+description = "An AI-powered personalized diet and fitness advisory system for Nepali cuisine. The system analyzes food images or user-provided meal information to identify local dishes, estimate nutritional values, and generate personalized dietary recommendations based on individual health profiles, fitness goals, and dietary preferences."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=6.0.6",
+    "matplotlib>=3.11.0",
+    "numpy>=2.5.0",
+    "pandas>=3.0.3",
+    "seaborn>=0.13.2",
+]
