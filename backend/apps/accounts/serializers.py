@@ -1,8 +1,8 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework import serializers
 from .models import CustomUser
 
 
-class UserSerializer(ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     """
     It is read only serializer for CustomUser model.
     It is used to serialize the user data when we want to send it in response.
@@ -24,7 +24,7 @@ class UserSerializer(ModelSerializer):
         ]
 
 
-class UserRegisterSerializer(ModelSerializer):
+class UserRegisterSerializer(serializers.ModelSerializer):
     """
     It is write only serializer for CustomUser model.
     It is used to deserialize the user data when we want to create a new user.
@@ -55,3 +55,30 @@ class UserRegisterSerializer(ModelSerializer):
 
         user = CustomUser.objects.create_user(**validated_data, password=password)
         return user
+
+
+class LoginSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(max_length=68, min_length=5, write_only=True)
+
+    class Meta:
+        model = CustomUser
+        fields = ["email", "password"]
+
+    def validate(self, validated_data):
+        email = validated_data.get("email")
+        password = validated_data.get("password")
+
+        try:
+            user = CustomUser.objects.get(email__iexact=email)
+        except CustomUser.DoesNotExist:
+            raise serializers.AuthenticationFailed("Invalid email or password")
+
+        if not user.is_active:
+            raise serializers.AuthenticationFailed("User account is disabled")
+
+        if not user.check_password(password):
+            raise serializers.AuthenticationFailed("Invalid email or password")
+
+        validated_data["user"] = user
+        return validated_data
