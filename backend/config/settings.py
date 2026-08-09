@@ -1,7 +1,12 @@
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent  # points to the backend folder.
+MEDIA_ROOT = os.path.join(
+    BASE_DIR, "media"
+)  # it will be inside of the backend folder just outside
+MEDIA_URL = "/media/"
 
 
 # Quick-start development settings - unsuitable for production
@@ -27,6 +32,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "apps.accounts",
     "apps.profiles",
+    "apps.meals",
     "rest_framework",
     "rest_framework_simplejwt",
 ]
