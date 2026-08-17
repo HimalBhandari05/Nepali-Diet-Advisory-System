@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "apps.accounts",
     "apps.profiles",
+    "apps.nutritiion",
     "apps.meals",
     "rest_framework",
     "rest_framework_simplejwt",
