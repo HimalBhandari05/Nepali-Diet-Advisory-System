@@ -1,10 +1,15 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 
-from .models import UserProfile
-from .serializers import UserProfileSerializer
+from .models import Allergy, DietaryRestriction, MedicalCondition, UserProfile
+from .serializers import (
+    AllergySerializer,
+    DietaryRestrictionSerializer,
+    MedicalConditionSerializer,
+    UserProfileSerializer,
+)
 
 
 class UserProfileAPIView(APIView):
@@ -89,4 +94,58 @@ class UserProfileAPIView(APIView):
                 "errors": serializer.errors,
             },
             status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+class MedicalConditionListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = MedicalCondition.objects.all()
+    serializer_class = MedicalConditionSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(
+            {
+                "status": True,
+                "message": "Medical condition list retrieved successfully.",
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class AllergyListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = Allergy.objects.all()
+    serializer_class = AllergySerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(
+            {
+                "status": True,
+                "message": "Allergy list retrieved successfully.",
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class DietaryRestrictionListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = DietaryRestriction.objects.all()
+    serializer_class = DietaryRestrictionSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(
+            {
+                "status": True,
+                "message": "Dietary restriction list retrieved successfully.",
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
         )

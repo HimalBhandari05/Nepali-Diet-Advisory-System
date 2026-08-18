@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-serif: "Newsreader", Georgia, Cambria, "Times New Roman", Times, serif;
+    --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    
+    --color-paper: #FAF8F5;
+    --color-paper-subtle: #F3F0EA;
+    --color-paper-muted: #EAE6DC;
+    --color-ink-primary: #181715;
+    --color-ink-secondary: #57554F;
+    --color-ink-tertiary: #85837C;
+    --color-rule: #E5E1D8;
+    --color-rule-dark: #C8C3B7;
+    --color-accent: #244234;
+  }
+
+  html {
+    background-color: #FAF8F5;
+    color: #181715;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #FAF8F5;
+    color: #181715;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+.font-editorial {
+  font-family: var(--font-serif);
+}
+
+.font-ui {
+  font-family: var(--font-sans);
+}
+
+.font-code {
+  font-family: var(--font-mono);
+}
