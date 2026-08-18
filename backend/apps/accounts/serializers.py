@@ -72,13 +72,13 @@ class LoginSerializer(serializers.ModelSerializer):
         try:
             user = CustomUser.objects.get(email__iexact=email)
         except CustomUser.DoesNotExist:
-            raise serializers.AuthenticationFailed("Invalid email or password")
+            raise serializers.ValidationError("Invalid email or password")
 
         if not user.is_active:
-            raise serializers.AuthenticationFailed("User account is disabled")
+            raise serializers.ValidationError("User account is disabled")
 
         if not user.check_password(password):
-            raise serializers.AuthenticationFailed("Invalid email or password")
+            raise serializers.ValidationError("Invalid email or password")
 
         validated_data["user"] = user
         return validated_data

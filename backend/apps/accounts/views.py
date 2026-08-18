@@ -12,6 +12,7 @@ class CustomUserRegisterView(APIView):
     """
 
     permission_classes = [permissions.AllowAny]
+    authentication_classes = []
 
     def post(self, request):
         serializer = UserRegisterSerializer(data=request.data)
@@ -43,6 +44,7 @@ class CustomUserLoginView(APIView):
     """
 
     permission_classes = [permissions.AllowAny]
+    authentication_classes = []
 
     def post(self, request, *args, **kwargs):
         data = request.data
