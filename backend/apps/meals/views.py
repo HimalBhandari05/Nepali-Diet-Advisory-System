@@ -4,6 +4,7 @@ from rest_framework import status
 from .models import MealLog
 from .serializers import MealLogSerializer
 from rest_framework.permissions import IsAuthenticated
+from .meal_analysis_service import analyze_meal_image
 
 
 class MealLogListCreateView(APIView):
@@ -30,12 +31,16 @@ class MealLogListCreateView(APIView):
     def post(self, request):
         serializer = MealLogSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save(user=request.user)
+            meal = serializer.save(user=request.user)
+            analysis = None
+            if meal.image:
+                analysis = analyze_meal_image(meal)
             return Response(
                 {
                     "status": True,
                     "message": "Meal log created successfully",
                     "data": serializer.data,
+                    "analysis": analysis,
                 },
                 status=status.HTTP_201_CREATED,
             )
