@@ -5,6 +5,7 @@ description = "An AI-powered personalized diet and fitness advisory system for N
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "chromadb>=1.5.9",
     "django>=6.0.6",
     "django-admin>=2.0.2",
     "django-cors-headers>=4.9.0",
