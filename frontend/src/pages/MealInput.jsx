@@ -128,7 +128,11 @@ export default function MealInput() {
       const createdMeal = response.data?.data;
       const mealId = createdMeal?.id;
 
-      navigate('/dashboard', { state: { mealLoggedId: mealId } });
+      if (mealId) {
+        navigate(`/meals/${mealId}`);
+      } else {
+        navigate('/dashboard');
+      }
     } catch (error) {
       if (error.response?.data?.data && typeof error.response.data.data === 'object') {
         const serverErrors = error.response.data.data;
@@ -223,6 +227,7 @@ export default function MealInput() {
                         type="radio"
                         value={choice.value}
                         className="sr-only"
+                        disabled={isSubmitting}
                         {...register('meal_type', {
                           required: 'Please select a meal type',
                         })}
@@ -251,8 +256,9 @@ export default function MealInput() {
               <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
+                  disabled={isSubmitting}
                   onClick={() => handleModeChange(INPUT_MODES.DESCRIPTION)}
-                  className={`py-2.5 px-4 font-ui text-sm border rounded-xs transition-colors text-center cursor-pointer ${
+                  className={`py-2.5 px-4 font-ui text-sm border rounded-xs transition-colors text-center cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                     selectedMode === INPUT_MODES.DESCRIPTION
                       ? 'bg-[#181715] text-[#FAF8F5] border-[#181715]'
                       : 'bg-white text-[#181715] border-[#E5E1D8] hover:border-[#244234]'
@@ -262,8 +268,9 @@ export default function MealInput() {
                 </button>
                 <button
                   type="button"
+                  disabled={isSubmitting}
                   onClick={() => handleModeChange(INPUT_MODES.PHOTO)}
-                  className={`py-2.5 px-4 font-ui text-sm border rounded-xs transition-colors text-center cursor-pointer ${
+                  className={`py-2.5 px-4 font-ui text-sm border rounded-xs transition-colors text-center cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                     selectedMode === INPUT_MODES.PHOTO
                       ? 'bg-[#181715] text-[#FAF8F5] border-[#181715]'
                       : 'bg-white text-[#181715] border-[#E5E1D8] hover:border-[#244234]'
@@ -295,8 +302,9 @@ export default function MealInput() {
                 <textarea
                   id="description"
                   rows={4}
+                  disabled={isSubmitting}
                   placeholder="e.g. 1 plate Dal Bhat (steamed rice, yellow lentil soup), Saag (mustard greens), Achar, and Chicken curry"
-                  className={`w-full font-ui text-sm bg-white border px-3.5 py-2.5 rounded-xs transition-colors focus:outline-none focus:ring-1 ${
+                  className={`w-full font-ui text-sm bg-white border px-3.5 py-2.5 rounded-xs transition-colors focus:outline-none focus:ring-1 disabled:bg-[#F3F0EA] disabled:cursor-not-allowed ${
                     errors.description
                       ? 'border-[#9B2C2C] focus:ring-[#9B2C2C]'
                       : 'border-[#E5E1D8] focus:border-[#244234] focus:ring-[#244234]'
@@ -330,8 +338,9 @@ export default function MealInput() {
                     ref={fileInputRef}
                     type="file"
                     accept="image/*"
+                    disabled={isSubmitting}
                     onChange={handleImageChange}
-                    className="block w-full text-sm font-ui text-[#57554F] file:mr-4 file:py-2 file:px-4 file:rounded-xs file:border-0 file:text-xs file:font-semibold file:bg-[#181715] file:text-[#FAF8F5] hover:file:bg-[#244234] file:cursor-pointer border border-[#E5E1D8] bg-white p-2 rounded-xs cursor-pointer"
+                    className="block w-full text-sm font-ui text-[#57554F] file:mr-4 file:py-2 file:px-4 file:rounded-xs file:border-0 file:text-xs file:font-semibold file:bg-[#181715] file:text-[#FAF8F5] hover:file:bg-[#244234] file:cursor-pointer border border-[#E5E1D8] bg-white p-2 rounded-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   {errors.image && (
                     <p className="font-ui text-xs text-[#9B2C2C] mt-1.5">
@@ -349,8 +358,9 @@ export default function MealInput() {
                       </span>
                       <button
                         type="button"
+                        disabled={isSubmitting}
                         onClick={handleClearImage}
-                        className="font-ui text-xs font-medium text-[#9B2C2C] hover:underline cursor-pointer"
+                        className="font-ui text-xs font-medium text-[#9B2C2C] hover:underline cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Remove Photo
                       </button>
@@ -367,14 +377,40 @@ export default function MealInput() {
               </div>
             )}
 
+            {/* AI Analysis Processing Indicator */}
+            {isSubmitting && selectedMode === INPUT_MODES.PHOTO && (
+              <div className="p-3.5 bg-[#F3F0EA] border border-[#E5E1D8] text-[#181715] text-xs font-ui rounded-xs flex items-center gap-2.5">
+                <span className="w-2 h-2 rounded-full bg-[#244234] animate-pulse shrink-0" />
+                <div>
+                  <span className="font-semibold block text-[#181715]">
+                    AI Food Analysis in Progress
+                  </span>
+                  <span className="text-[#57554F] text-[11px]">
+                    Segmenting food items, estimating portion weights, and calculating nutrition...
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Submit Button */}
             <div className="pt-2">
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full font-ui text-sm font-medium bg-[#181715] hover:bg-[#244234] text-[#FAF8F5] py-2.5 px-4 rounded-xs transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full font-ui text-sm font-medium bg-[#181715] hover:bg-[#244234] text-[#FAF8F5] py-2.5 px-4 rounded-xs transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {isSubmitting ? 'Logging Meal...' : 'Save Meal Entry'}
+                {isSubmitting ? (
+                  <>
+                    <span className="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>
+                      {selectedMode === INPUT_MODES.PHOTO
+                        ? 'Analyzing & Saving Meal...'
+                        : 'Saving Meal Entry...'}
+                    </span>
+                  </>
+                ) : (
+                  'Save Meal Entry'
+                )}
               </button>
             </div>
           </form>

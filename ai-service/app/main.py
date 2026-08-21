@@ -1,12 +1,6 @@
-import os
-import django
 from fastapi import FastAPI
-from pydantic import BaseModel
-from api.routes.food import router as food_router
-
-# point to the django settings module
-
-# os.environ.setdefault("DJANGO_SETTINGS_MODULE", ".settings")
+from app.api.routes.food import router as food_router
+from app.api.routes.recommendation import router as recommendation_router
 
 app = FastAPI(
     title="Nepali Diet Advisory System",
@@ -24,6 +18,7 @@ def read_root():
 
 
 app.include_router(food_router)
+app.include_router(recommendation_router)
 
 if __name__ == "__main__":
     import uvicorn

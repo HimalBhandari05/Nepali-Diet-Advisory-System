@@ -1,5 +1,9 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "Nepali-Diet-Advisory-System"
+name = "nepali-diet-advisory-system"
 version = "0.1.0"
 description = "An AI-powered personalized diet and fitness advisory system for Nepali cuisine. The system analyzes food images or user-provided meal information to identify local dishes, estimate nutritional values, and generate personalized dietary recommendations based on individual health profiles, fitness goals, and dietary preferences."
 readme = "README.md"
@@ -13,12 +17,22 @@ dependencies = [
     "djangorestframework-simplejwt>=5.5.1",
     "fastapi[standard]>=0.141.1",
     "httpx>=0.28.1",
+    "langchain-chroma>=1.1.0",
+    "langchain-huggingface>=1.2.2",
     "matplotlib>=3.11.0",
     "numpy>=2.5.0",
     "opencv-python>=5.0.0.93",
     "pandas>=3.0.3",
     "pillow>=12.2.0",
     "python-multipart>=0.0.32",
+    "rapidfuzz>=3.14.5",
     "seaborn>=0.13.2",
+    "sentence-transformers>=6.0.0",
     "ultralytics>=8.4.121",
 ]
+
+[tool.setuptools.packages.find]
+where = ["ai-service"]
+
+[tool.pyright]
+extraPaths = ["ai-service"]

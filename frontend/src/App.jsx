@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import ProfileSetup from './pages/ProfileSetup';
 import ProfileView from './pages/ProfileView';
 import MealInput from './pages/MealInput';
+import MealDetail from './pages/MealDetail';
 
 function HomeRoute() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -56,6 +57,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <MealInput />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/meals/:id"
+            element={
+              <ProtectedRoute>
+                <MealDetail />
               </ProtectedRoute>
             }
           />

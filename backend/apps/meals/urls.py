@@ -1,7 +1,18 @@
 from django.urls import path
-from .views import MealLogListCreateView, MealLogDetailView
+from .views import (
+    MealLogListCreateView,
+    MealLogDetailView,
+    MealAnalyzeView,
+    MealRecommendationView,
+)
 
 urlpatterns = [
     path("", MealLogListCreateView.as_view(), name="meal-list-create"),
     path("<int:meal_id>/", MealLogDetailView.as_view(), name="meal-detail"),
+    path("<int:meal_id>/analyze/", MealAnalyzeView.as_view(), name="meal-analyze"),
+    path(
+        "<int:meal_id>/recommendation/",
+        MealRecommendationView.as_view(),
+        name="meal-recommendation",
+    ),
 ]

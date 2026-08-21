@@ -18,7 +18,7 @@ SECRET_KEY = "django-insecure-$l-46%!(+*bad-40tzw*b19%^c%v$=c!o2^oxz1ac5&f6cud+5
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "testserver", "*"]
 
 
 # Application definition
@@ -132,3 +132,7 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     )
 }
+
+# AI Service Configuration
+AI_SERVICE_URL = os.getenv("AI_SERVICE_URL", "http://127.0.0.1:8001")
+

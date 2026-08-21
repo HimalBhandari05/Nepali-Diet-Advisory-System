@@ -95,3 +95,37 @@ class MealFoodItems(models.Model):
 
     def __str__(self):
         return f"{self.food_analysis.meal.user.email}'s {self.food_name} at {self.created_at}"
+
+
+class MealRecommendation(models.Model):
+    """
+    Personalized AI advisory and dietary recommendations for a MealLog
+    generated via FastAPI and local LLM. OneToOne with MealLog.
+    """
+
+    meal = models.OneToOneField(
+        MealLog,
+        on_delete=models.CASCADE,
+        related_name="recommendation",
+    )
+
+    overall_verdict = models.CharField(max_length=50)
+    summary = models.TextField()
+    macro_assessment = models.JSONField(default=dict)
+    health_and_dietary_alerts = models.JSONField(default=list)
+    actionable_suggestions = models.JSONField(default=list)
+    alternative_foods = models.JSONField(default=list)
+
+    model_name = models.CharField(max_length=100, blank=True)
+    generated_at = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Meal Recommendation"
+        verbose_name_plural = "Meal Recommendations"
+
+    def __str__(self):
+        return f"Recommendation for {self.meal.user.email}'s meal ({self.meal.id})"
