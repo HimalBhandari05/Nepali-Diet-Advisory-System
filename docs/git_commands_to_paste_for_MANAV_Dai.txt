@@ -1,0 +1,65 @@
+# yo manav dai ko laptop ko lagi ho hai
+-> Commiting to a new branch and merging commands
+
+# pushing to a new repo
+cd ~/Projects/Nepali-Diet-Advisory-System
+git checkout -b feature/ai-service-setup
+git add .
+git commit -m "updated"
+git push -u origin feature/ai-service-setup
+
+# mergeing with main repo
+git checkout main
+git pull origin main
+git merge feature/ai-service-setup
+git push origin main
+
+# running backend (once)
+cd ~/Projects/Nepali-Diet-Advisory-System/backend
+export PATH="$HOME/.local/bin:$PATH"
+uv sync
+uv run python manage.py migrate
+uv run python manage.py runserver
+
+#runningbackend (after 2nd time)
+cd ~/Projects/Nepali-Diet-Advisory-System/backend
+export PATH="$HOME/.local/bin:$PATH"
+uv run python manage.py runserver
+
+#running frontend
+cd ~/Projects/Nepali-Diet-Advisory-System/frontend
+npm install
+npm run dev
+
+
+
+
+
+# pulling, creaitng side branch, pushing, merging, then delteing the side branch
+
+
+# 1. Stash all local changes (including untracked files) so nothing gets lost
+git stash -u
+
+# 2. Switch to main and pull latest remote code safely
+git checkout main
+git pull origin main
+
+# 3. Create and switch to your new side branch
+git checkout -b feature/my-feature
+
+# 4. Bring back your local files/changes
+git stash pop
+
+# 5. Stage, commit, and push the side branch
+git add .
+git commit -m "feat: my changes"
+git push -u origin feature/my-feature
+
+# 6. Switch back to main, merge side branch, and push to GitHub
+git checkout main
+git merge feature/my-feature
+git push origin main
+
+# 7. Delete the local side branch
+git branch -d feature/my-feature
