@@ -79,9 +79,9 @@ class ImageFoodAnalysisService:
 
             # Calculate macros
             item_cal = round(nutrition_per_gram.get("calories", 0.0) * estimated_weight_g, 2)
-            item_prot = round(nutrition_per_gram.get("protein", 0.0) * estimated_weight_g, 2)
-            item_carbs = round(nutrition_per_gram.get("carbs", 0.0) * estimated_weight_g, 2)
-            item_fat = round(nutrition_per_gram.get("fat", 0.0) * estimated_weight_g, 2)
+            item_prot = round(nutrition_per_gram.get("protein_g", nutrition_per_gram.get("protein", 0.0)) * estimated_weight_g, 2)
+            item_carbs = round(nutrition_per_gram.get("carbs_g", nutrition_per_gram.get("carbs", 0.0)) * estimated_weight_g, 2)
+            item_fat = round(nutrition_per_gram.get("fat_g", nutrition_per_gram.get("fat", 0.0)) * estimated_weight_g, 2)
 
             total_nutrition["calories"] += item_cal
             total_nutrition["protein"] += item_prot

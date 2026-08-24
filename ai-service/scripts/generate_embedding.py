@@ -109,6 +109,14 @@ def build_vector_store():
         # does NOT need to influence semantic matching.
         # -------------------------------------------------
 
+        standard_portion = food.get(
+            "standard_portion", {}
+        )
+
+        nutrition_sp = food.get(
+            "nutrition_per_standard_portion", {}
+        )
+
         nutrition = food.get(
             "nutrition_per_gram", {}
         )
@@ -135,6 +143,14 @@ def build_vector_store():
             "fitness_direction": food.get(
                 "fitness_direction",
                 ""
+            ),
+            "standard_portion": json.dumps(
+                standard_portion,
+                ensure_ascii=False
+            ),
+            "nutrition_per_standard_portion": json.dumps(
+                nutrition_sp,
+                ensure_ascii=False
             ),
             "nutrition_per_gram": json.dumps(
                 nutrition,
