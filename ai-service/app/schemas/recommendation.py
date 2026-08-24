@@ -45,6 +45,7 @@ class UserProfileInput(BaseModel):
     medical_conditions: Optional[List[str]] = Field(default_factory=list)
     allergies: Optional[List[str]] = Field(default_factory=list)
     dietary_restrictions: Optional[List[str]] = Field(default_factory=list)
+    social_religious_constraints: Optional[List[str]] = Field(default_factory=list)
 
 
 class RecommendationRequest(BaseModel):
@@ -60,6 +61,24 @@ class RecommendationRequest(BaseModel):
     )
     nutrition_summary: NutritionSummaryInput
     food_items: List[FoodItemInput] = Field(default_factory=list)
+    user_profile: Optional[UserProfileInput] = None
+
+
+class DailyMealInput(BaseModel):
+    meal_id: Optional[int] = None
+    meal_type: str = Field(
+        ..., description="e.g., 'BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'"
+    )
+    logged_at: Optional[str] = None
+    description: Optional[str] = None
+    nutrition_summary: NutritionSummaryInput
+    food_items: List[FoodItemInput] = Field(default_factory=list)
+
+
+class DailyRecommendationRequest(BaseModel):
+    date: str = Field(..., description="Target date in YYYY-MM-DD format")
+    daily_nutrition_summary: NutritionSummaryInput
+    meals: List[DailyMealInput] = Field(default_factory=list)
     user_profile: Optional[UserProfileInput] = None
 
 
@@ -105,3 +124,26 @@ class RecommendationDetail(BaseModel):
 class RecommendationResponse(BaseModel):
     success: bool
     recommendation: RecommendationDetail
+
+
+class DailyRecommendationDetail(BaseModel):
+    date: str
+    overall_verdict: str = Field(
+        ...,
+        description="'OPTIMAL', 'ALIGNED', 'MODERATELY_ALIGNED', 'NEEDS_IMPROVEMENT', 'RESTRICTED'",
+    )
+    summary: str
+    macro_assessment: MacroAssessment
+    health_and_dietary_alerts: List[HealthAlert] = Field(default_factory=list)
+    actionable_suggestions: List[str] = Field(default_factory=list)
+    alternative_foods: List[FoodAlternative] = Field(default_factory=list)
+    daily_totals: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    model_name: str
+    generated_at: str
+
+
+class DailyRecommendationResponse(BaseModel):
+    success: bool
+    recommendation: DailyRecommendationDetail
+
+

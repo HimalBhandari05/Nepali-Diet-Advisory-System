@@ -4,10 +4,18 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 
-from .models import MealLog
-from .serializers import MealLogSerializer, MealRecommendationSerializer
+from .models import MealLog, DailyRecommendation
+from .serializers import (
+    MealLogSerializer,
+    MealRecommendationSerializer,
+    DailyRecommendationSerializer,
+)
 from .meal_analysis_service import analyze_meal_image, analyze_meal_text
 from .meal_recommendation_service import generate_and_save_meal_recommendation
+from .daily_recommendation_service import (
+    generate_and_save_daily_recommendation,
+    parse_target_date,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -302,3 +310,105 @@ class MealRecommendationView(APIView):
             },
             status=status.HTTP_200_OK,
         )
+
+
+class DailyRecommendationView(APIView):
+    """
+    Generate or retrieve personalized whole-day AI dietary recommendation for a user on a given date.
+    GET  : Retrieve the stored daily recommendation for date (default: today).
+    POST : Generate (or re-generate) whole-day recommendation via FastAPI + LLM and persist it in Django.
+    """
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        date_str = request.query_params.get("date")
+        try:
+            target_date = parse_target_date(date_str)
+        except ValueError as exc:
+            return Response(
+                {
+                    "status": False,
+                    "message": str(exc),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        recommendation = DailyRecommendation.objects.filter(
+            user=request.user, date=target_date
+        ).first()
+
+        if not recommendation:
+            return Response(
+                {
+                    "status": False,
+                    "message": f"No daily recommendation found for {target_date.isoformat()}. Please generate one first.",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        serializer = DailyRecommendationSerializer(recommendation)
+        return Response(
+            {
+                "status": True,
+                "message": "Daily recommendation fetched successfully",
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def post(self, request):
+        date_str = None
+        if isinstance(request.data, dict):
+            date_str = request.data.get("date")
+        if not date_str:
+            date_str = request.query_params.get("date")
+
+        try:
+            target_date = parse_target_date(date_str)
+        except ValueError as exc:
+            return Response(
+                {
+                    "status": False,
+                    "message": str(exc),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            recommendation = generate_and_save_daily_recommendation(
+                request.user, target_date
+            )
+        except ValueError as exc:
+            logger.warning(
+                f"Validation error generating daily recommendation for user {request.user.id}: {exc}"
+            )
+            return Response(
+                {
+                    "status": False,
+                    "message": str(exc),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as exc:
+            logger.error(
+                f"Error generating daily recommendation for user {request.user.id}: {exc}"
+            )
+            return Response(
+                {
+                    "status": False,
+                    "message": f"Failed to generate daily recommendation: {str(exc)}",
+                },
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+
+        serializer = DailyRecommendationSerializer(recommendation)
+        return Response(
+            {
+                "status": True,
+                "message": "Daily recommendation generated successfully",
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+

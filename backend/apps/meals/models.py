@@ -129,3 +129,46 @@ class MealRecommendation(models.Model):
 
     def __str__(self):
         return f"Recommendation for {self.meal.user.email}'s meal ({self.meal.id})"
+
+
+class DailyRecommendation(models.Model):
+    """
+    Personalized whole-day AI advisory and dietary recommendations for a user
+    on a specific date, generated via FastAPI and local LLM.
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="daily_recommendations",
+    )
+    date = models.DateField()
+
+    overall_verdict = models.CharField(max_length=50)
+    summary = models.TextField()
+    macro_assessment = models.JSONField(default=dict)
+    health_and_dietary_alerts = models.JSONField(default=list)
+    actionable_suggestions = models.JSONField(default=list)
+    alternative_foods = models.JSONField(default=list)
+    daily_totals = models.JSONField(default=dict)
+
+    model_name = models.CharField(max_length=100, blank=True)
+    generated_at = models.DateTimeField(null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-date", "-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "date"],
+                name="unique_user_daily_recommendation",
+            )
+        ]
+        verbose_name = "Daily Recommendation"
+        verbose_name_plural = "Daily Recommendations"
+
+    def __str__(self):
+        return f"Daily Recommendation for {self.user.email} on {self.date}"
+

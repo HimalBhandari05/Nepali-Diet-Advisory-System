@@ -1,6 +1,12 @@
 from rest_framework import serializers
 
-from .models import MealLog, TotalFoodAnalysis, MealFoodItems, MealRecommendation
+from .models import (
+    MealLog,
+    TotalFoodAnalysis,
+    MealFoodItems,
+    MealRecommendation,
+    DailyRecommendation,
+)
 
 
 class MealFoodItemSerializer(serializers.ModelSerializer):
@@ -58,6 +64,28 @@ class MealRecommendationSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "created_at", "updated_at"]
 
 
+class DailyRecommendationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DailyRecommendation
+        fields = [
+            "id",
+            "user",
+            "date",
+            "overall_verdict",
+            "summary",
+            "macro_assessment",
+            "health_and_dietary_alerts",
+            "actionable_suggestions",
+            "alternative_foods",
+            "daily_totals",
+            "model_name",
+            "generated_at",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "user", "created_at", "updated_at"]
+
+
 class MealLogSerializer(serializers.ModelSerializer):
     analysis = TotalFoodAnalysisSerializer(read_only=True)
     recommendation = MealRecommendationSerializer(read_only=True)
@@ -76,3 +104,4 @@ class MealLogSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["user", "id", "created_at", "updated_at"]
+

@@ -15,7 +15,9 @@ from .models import (
     TotalFoodAnalysis,
     MealFoodItems,
     MealRecommendation,
+    DailyRecommendation,
 )
+
 
 User = get_user_model()
 
@@ -502,3 +504,252 @@ class MealRecommendationAPITestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_502_BAD_GATEWAY)
         self.assertFalse(response.data["status"])
         self.assertIn("FastAPI AI service connection timeout", response.data["message"])
+
+
+class DailyRecommendationAPITestCase(APITestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="dailyrecuser@example.com",
+            username="dailyrecuser",
+            password="testpassword123",
+        )
+        self.other_user = User.objects.create_user(
+            email="otherdailyuser@example.com",
+            username="otherdailyuser",
+            password="testpassword123",
+        )
+
+        # Profile with health constraints
+        self.profile = UserProfile.objects.create(
+            user=self.user,
+            age=28,
+            gender="MALE",
+            height_cm=175.0,
+            weight_kg=75.0,
+            target_weight_kg=70.0,
+            activity_level="MODERATE",
+            fitness_goal="LOSE_WEIGHT",
+            dietary_preference="NON_VEGETARIAN",
+        )
+        med_cond, _ = MedicalCondition.objects.get_or_create(name="Hypertension")
+        allergy, _ = Allergy.objects.get_or_create(name="Peanuts")
+        restriction, _ = DietaryRestriction.objects.get_or_create(name="Low Sodium")
+        self.profile.medical_conditions.add(med_cond)
+        self.profile.allergies.add(allergy)
+        self.profile.dietary_restrictions.add(restriction)
+
+        self.client.force_authenticate(user=self.user)
+
+
+    def _create_sample_meal(self, user, meal_type, description, cal, pro, carb, fat, food_name="Rice"):
+        meal = MealLog.objects.create(
+            user=user,
+            meal_type=meal_type,
+            description=description,
+        )
+        analysis = TotalFoodAnalysis.objects.create(
+            meal=meal,
+            total_calories=cal,
+            total_protein=pro,
+            total_carbs=carb,
+            total_fats=fat,
+        )
+        MealFoodItems.objects.create(
+            food_analysis=analysis,
+            food_name=food_name,
+            food_quantity=150.0,
+            food_quantity_unit="g",
+            food_calories=cal,
+            food_protein=pro,
+            food_carbs=carb,
+            food_fats=fat,
+        )
+        return meal
+
+    def test_get_daily_recommendation_not_found(self):
+        response = self.client.get("/api/meals/daily-recommendation/")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertFalse(response.data["status"])
+
+    def test_get_daily_recommendation_success(self):
+        from django.utils import timezone
+        today = timezone.localdate()
+        DailyRecommendation.objects.create(
+            user=self.user,
+            date=today,
+            overall_verdict="ALIGNED",
+            summary="Well balanced day.",
+            macro_assessment={"calories_evaluation": "Good", "protein_evaluation": "Optimal"},
+            health_and_dietary_alerts=[],
+            actionable_suggestions=["Drink water"],
+            alternative_foods=[],
+            daily_totals={"total_calories": 1800, "total_protein": 70, "total_carbs": 220, "total_fats": 40, "meals_count": 2},
+            model_name="qwen2.5:3b",
+        )
+
+        response = self.client.get(f"/api/meals/daily-recommendation/?date={today.isoformat()}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data["status"])
+        data = response.data["data"]
+        self.assertEqual(data["overall_verdict"], "ALIGNED")
+        self.assertEqual(data["summary"], "Well balanced day.")
+        self.assertEqual(data["daily_totals"]["total_calories"], 1800)
+
+    def test_post_daily_recommendation_zero_meals_returns_400(self):
+        response = self.client.post("/api/meals/daily-recommendation/")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(response.data["status"])
+        self.assertIn("No analyzed meals found", response.data["message"])
+
+    @patch("apps.meals.daily_recommendation_service.generate_daily_recommendation")
+    def test_post_daily_recommendation_multiple_meals_success(self, mock_generate_daily):
+        from django.utils import timezone
+        today = timezone.localdate()
+
+        # Create breakfast and lunch
+        self._create_sample_meal(self.user, "BREAKFAST", "Eggs and toast", 350.0, 20.0, 30.0, 12.0, "Boiled Egg")
+        self._create_sample_meal(self.user, "LUNCH", "Dal bhat", 750.0, 30.0, 110.0, 15.0, "Cooked Rice")
+
+        mock_generate_daily.return_value = {
+            "success": True,
+            "recommendation": {
+                "date": today.isoformat(),
+                "overall_verdict": "OPTIMAL",
+                "summary": "Excellent macro balance across both breakfast and lunch.",
+                "macro_assessment": {
+                    "calories_evaluation": "1100 kcal consumed. On track for deficit target.",
+                    "protein_evaluation": "50g protein so far. Very solid distribution.",
+                    "carbs_evaluation": "140g carbs from complex sources.",
+                    "fats_evaluation": "27g healthy fats.",
+                },
+                "health_and_dietary_alerts": [
+                    {
+                        "type": "GOAL_ALIGNMENT",
+                        "severity": "INFO",
+                        "message": "Hypertension parameters respected; low sodium intake maintained.",
+                    }
+                ],
+                "actionable_suggestions": [
+                    "Plan a lighter dinner with green saag and grilled chicken or paneer.",
+                    "Keep hydration steady in the afternoon.",
+                ],
+                "alternative_foods": [
+                    {
+                        "recommended_food": "Brown Chamal",
+                        "replaces": "Polished Rice",
+                        "reason": "Lower glycemic index for weight loss.",
+                    }
+                ],
+                "daily_totals": {
+                    "total_calories": 1100.0,
+                    "total_protein": 50.0,
+                    "total_carbs": 140.0,
+                    "total_fats": 27.0,
+                    "meals_count": 2,
+                },
+                "model_name": "qwen2.5:3b",
+                "generated_at": "2026-08-24T12:00:00Z",
+            },
+        }
+
+        response = self.client.post("/api/meals/daily-recommendation/", {"date": today.isoformat()}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data["status"])
+        data = response.data["data"]
+
+        # Verify payload sent to AI service
+        mock_generate_daily.assert_called_once()
+        sent_payload = mock_generate_daily.call_args[0][0]
+        self.assertEqual(sent_payload["date"], today.isoformat())
+        self.assertEqual(sent_payload["daily_nutrition_summary"]["total_calories"], 1100.0)
+        self.assertEqual(sent_payload["daily_nutrition_summary"]["total_protein"], 50.0)
+        self.assertEqual(len(sent_payload["meals"]), 2)
+        self.assertEqual(sent_payload["user_profile"]["fitness_goal"], "LOSE_WEIGHT")
+        self.assertIn("Hypertension", sent_payload["user_profile"]["medical_conditions"])
+        self.assertIn("Low Sodium", sent_payload["user_profile"]["dietary_restrictions"])
+
+        # Verify DB persistence
+        daily_rec = DailyRecommendation.objects.get(user=self.user, date=today)
+        self.assertEqual(daily_rec.overall_verdict, "OPTIMAL")
+        self.assertEqual(daily_rec.daily_totals["total_calories"], 1100.0)
+        self.assertEqual(daily_rec.daily_totals["meals_count"], 2)
+
+        # Verify response
+        self.assertEqual(data["overall_verdict"], "OPTIMAL")
+        self.assertEqual(data["summary"], "Excellent macro balance across both breakfast and lunch.")
+        self.assertEqual(len(data["actionable_suggestions"]), 2)
+
+    @patch("apps.meals.daily_recommendation_service.generate_daily_recommendation")
+    def test_post_daily_recommendation_regeneration_updates_existing(self, mock_generate_daily):
+        from django.utils import timezone
+        today = timezone.localdate()
+
+        self._create_sample_meal(self.user, "BREAKFAST", "Toast", 200.0, 8.0, 30.0, 4.0)
+
+        mock_generate_daily.return_value = {
+            "success": True,
+            "recommendation": {
+                "date": today.isoformat(),
+                "overall_verdict": "MODERATELY_ALIGNED",
+                "summary": "Initial morning assessment.",
+                "macro_assessment": {},
+                "health_and_dietary_alerts": [],
+                "actionable_suggestions": ["Eat more protein"],
+                "alternative_foods": [],
+                "model_name": "qwen2.5:3b",
+                "generated_at": "2026-08-24T08:00:00Z",
+            },
+        }
+
+        # First generation
+        self.client.post("/api/meals/daily-recommendation/", {"date": today.isoformat()}, format="json")
+        self.assertEqual(DailyRecommendation.objects.filter(user=self.user, date=today).count(), 1)
+
+        # Second generation with updated assessment
+        mock_generate_daily.return_value["recommendation"]["overall_verdict"] = "ALIGNED"
+        mock_generate_daily.return_value["recommendation"]["summary"] = "Regenerated assessment."
+
+        resp = self.client.post("/api/meals/daily-recommendation/", {"date": today.isoformat()}, format="json")
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+
+        # Still only 1 record (updated in place)
+        self.assertEqual(DailyRecommendation.objects.filter(user=self.user, date=today).count(), 1)
+        rec = DailyRecommendation.objects.get(user=self.user, date=today)
+        self.assertEqual(rec.overall_verdict, "ALIGNED")
+        self.assertEqual(rec.summary, "Regenerated assessment.")
+
+    def test_unauthorized_user_cannot_access_other_user_daily_recommendation(self):
+        from django.utils import timezone
+        today = timezone.localdate()
+
+        DailyRecommendation.objects.create(
+            user=self.user,
+            date=today,
+            overall_verdict="ALIGNED",
+            summary="Private user recommendation",
+            macro_assessment={},
+            health_and_dietary_alerts=[],
+            actionable_suggestions=[],
+            alternative_foods=[],
+            model_name="qwen2.5:3b",
+        )
+
+        self.client.force_authenticate(user=self.other_user)
+        resp = self.client.get(f"/api/meals/daily-recommendation/?date={today.isoformat()}")
+        self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertFalse(resp.data["status"])
+
+    @patch("apps.meals.daily_recommendation_service.generate_daily_recommendation")
+    def test_daily_recommendation_ai_service_failure_returns_502(self, mock_generate_daily):
+        from django.utils import timezone
+        today = timezone.localdate()
+
+        self._create_sample_meal(self.user, "LUNCH", "Dal bhat", 600.0, 20.0, 90.0, 10.0)
+        mock_generate_daily.side_effect = Exception("FastAPI AI service connection timeout")
+
+        resp = self.client.post("/api/meals/daily-recommendation/", {"date": today.isoformat()}, format="json")
+        self.assertEqual(resp.status_code, status.HTTP_502_BAD_GATEWAY)
+        self.assertFalse(resp.data["status"])
+        self.assertIn("FastAPI AI service connection timeout", resp.data["message"])
+

@@ -97,3 +97,20 @@ def generate_recommendation(payload: dict) -> dict:
     response.raise_for_status()
 
     return response.json()
+
+
+def generate_daily_recommendation(payload: dict) -> dict:
+    """
+    Send structured full-day meals and user profile context to the AI service
+    to generate whole-day personalized dietary advisory feedback via LLM.
+    """
+    response = httpx.post(
+        f"{AI_SERVICE_URL}/api/recommendation/daily",
+        json=payload,
+        timeout=300.0,
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+
