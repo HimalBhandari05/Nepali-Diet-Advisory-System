@@ -10,7 +10,7 @@ export default function ProfileSetupModal({ isOpen, onSuccess }) {
       aria-modal="true"
       aria-labelledby="profile-modal-title"
     >
-      <div className="bg-[#FAF8F5] border border-[#E5E1D8] p-6 sm:p-8 rounded-xs max-w-xl w-full my-8 shadow-2xl">
+      <div className="bg-[#FAF8F5] border border-[#E5E1D8] p-6 sm:p-8 rounded-xs max-w-2xl w-full my-8 shadow-2xl max-h-[90vh] overflow-y-auto">
         <div className="mb-6">
           <span className="font-code text-xs text-[#85837C] uppercase tracking-wider block mb-1">
             03 / Profile Setup Required
@@ -22,7 +22,7 @@ export default function ProfileSetupModal({ isOpen, onSuccess }) {
             Complete Your Profile
           </h2>
           <p className="font-ui text-sm text-[#57554F] mt-1">
-            Before accessing your dashboard, please provide your body metrics and lifestyle preferences.
+            Provide your body metrics and health preferences to personalize your dietary recommendations.
           </p>
         </div>
 

@@ -1,5 +1,11 @@
 from django.contrib import admin
-from .models import UserProfile, MedicalCondition, Allergy, DietaryRestriction
+from .models import (
+    UserProfile,
+    MedicalCondition,
+    Allergy,
+    DietaryRestriction,
+    SocialReligiousConstraint,
+)
 
 
 class MedicalConditionAdmin(admin.ModelAdmin):
@@ -50,6 +56,22 @@ class DietaryRestrictionAdmin(admin.ModelAdmin):
     ordering = ["name"]
 
 
+class SocialReligiousConstraintAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "description",
+    )
+    list_filter = (
+        "name",
+        "description",
+    )
+    search_fields = (
+        "name",
+        "description",
+    )
+    ordering = ["name"]
+
+
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = (
         "user",
@@ -79,3 +101,4 @@ admin.site.register(UserProfile, UserProfileAdmin)
 admin.site.register(MedicalCondition, MedicalConditionAdmin)
 admin.site.register(Allergy, AllergyAdmin)
 admin.site.register(DietaryRestriction, DietaryRestrictionAdmin)
+admin.site.register(SocialReligiousConstraint, SocialReligiousConstraintAdmin)

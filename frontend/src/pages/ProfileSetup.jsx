@@ -10,7 +10,7 @@ function ProfileSetup() {
       <Navbar />
 
       <main className="flex-1 flex items-center justify-center py-12 px-6">
-        <div className="max-w-xl w-full bg-[#FAF8F5] border border-[#E5E1D8] p-8 rounded-xs">
+        <div className="max-w-2xl w-full bg-[#FAF8F5] border border-[#E5E1D8] p-8 rounded-xs">
           <div className="mb-6">
             <span className="font-code text-xs text-[#85837C] uppercase tracking-wider block mb-1">
               03 / Profile Setup

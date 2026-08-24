@@ -3,12 +3,19 @@ from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 
-from .models import Allergy, DietaryRestriction, MedicalCondition, UserProfile
+from .models import (
+    Allergy,
+    DietaryRestriction,
+    MedicalCondition,
+    UserProfile,
+    SocialReligiousConstraint,
+)
 from .serializers import (
     AllergySerializer,
     DietaryRestrictionSerializer,
     MedicalConditionSerializer,
     UserProfileSerializer,
+    SocialReligiousConstraintSerializer,
 )
 
 
@@ -26,7 +33,7 @@ class UserProfileAPIView(APIView):
         serializer = UserProfileSerializer(data=request.data)
 
         if serializer.is_valid():
-            serializer.save(user=request.user) # save to db 
+            serializer.save(user=request.user)  # save to db
 
             return Response(
                 {
@@ -145,6 +152,24 @@ class DietaryRestrictionListView(generics.ListAPIView):
             {
                 "status": True,
                 "message": "Dietary restriction list retrieved successfully.",
+                "data": serializer.data,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class SocialReligiousConstraintListView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    queryset = SocialReligiousConstraint.objects.all()
+    serializer_class = SocialReligiousConstraintSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(
+            {
+                "status": True,
+                "message": "Social religious constraint list retrieved successfully.",
                 "data": serializer.data,
             },
             status=status.HTTP_200_OK,

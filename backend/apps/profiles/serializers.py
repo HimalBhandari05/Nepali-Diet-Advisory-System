@@ -1,5 +1,11 @@
 from rest_framework.serializers import ModelSerializer
-from .models import UserProfile, MedicalCondition, Allergy, DietaryRestriction
+from .models import (
+    UserProfile,
+    MedicalCondition,
+    Allergy,
+    DietaryRestriction,
+    SocialReligiousConstraint,
+)
 
 
 class MedicalConditionSerializer(ModelSerializer):
@@ -20,6 +26,12 @@ class DietaryRestrictionSerializer(ModelSerializer):
         fields = "__all__"
 
 
+class SocialReligiousConstraintSerializer(ModelSerializer):
+    class Meta:
+        model = SocialReligiousConstraint
+        fields = "__all__"
+
+
 class UserProfileSerializer(ModelSerializer):
     class Meta:
         model = UserProfile
@@ -37,7 +49,8 @@ class UserProfileSerializer(ModelSerializer):
             "medical_conditions",
             "allergies",
             "dietary_restrictions",
+            "social_religious_constraints",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id","user", "created_at", "updated_at"]
+        read_only_fields = ["id", "user", "created_at", "updated_at"]

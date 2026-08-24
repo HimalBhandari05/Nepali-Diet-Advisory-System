@@ -22,6 +22,7 @@ const KNOWN_FIELDS = [
   'medical_conditions',
   'allergies',
   'dietary_restrictions',
+  'social_religious_constraints',
 ];
 
 function ProfileView() {
@@ -34,6 +35,7 @@ function ProfileView() {
   const [medicalConditionsList, setMedicalConditionsList] = useState([]);
   const [allergiesList, setAllergiesList] = useState([]);
   const [dietaryRestrictionsList, setDietaryRestrictionsList] = useState([]);
+  const [socialReligiousConstraintsList, setSocialReligiousConstraintsList] = useState([]);
 
   const {
     register,
@@ -57,28 +59,32 @@ function ProfileView() {
       medical_conditions: [],
       allergies: [],
       dietary_restrictions: [],
+      social_religious_constraints: [],
     },
   });
 
   const watchedMedicalConditions = watch('medical_conditions') || [];
   const watchedAllergies = watch('allergies') || [];
   const watchedDietaryRestrictions = watch('dietary_restrictions') || [];
+  const watchedSocialReligiousConstraints = watch('social_religious_constraints') || [];
 
   const fetchProfileAndReferences = async () => {
     setInitialLoading(true);
     setInitialError(null);
 
     try {
-      const [profileRes, medRes, allergyRes, dietRes] = await Promise.all([
+      const [profileRes, medRes, allergyRes, dietRes, socialRes] = await Promise.all([
         apiClient.get('/api/profiles/user-profile/'),
         apiClient.get('/api/profiles/medical-conditions/'),
         apiClient.get('/api/profiles/allergies/'),
         apiClient.get('/api/profiles/dietary-restrictions/'),
+        apiClient.get('/api/profiles/social-religious-constraints/'),
       ]);
 
       setMedicalConditionsList(medRes.data?.data || []);
       setAllergiesList(allergyRes.data?.data || []);
       setDietaryRestrictionsList(dietRes.data?.data || []);
+      setSocialReligiousConstraintsList(socialRes.data?.data || []);
 
       const profile = profileRes.data?.data || {};
       reset({
@@ -93,6 +99,7 @@ function ProfileView() {
         medical_conditions: profile.medical_conditions || [],
         allergies: profile.allergies || [],
         dietary_restrictions: profile.dietary_restrictions || [],
+        social_religious_constraints: profile.social_religious_constraints || [],
       });
     } catch (error) {
       if (error.response?.status === 404) {
@@ -174,6 +181,9 @@ function ProfileView() {
     if (dirtyFields.dietary_restrictions) {
       payload.dietary_restrictions = (data.dietary_restrictions || []).map(Number);
     }
+    if (dirtyFields.social_religious_constraints) {
+      payload.social_religious_constraints = (data.social_religious_constraints || []).map(Number);
+    }
 
     try {
       const response = await apiClient.patch('/api/profiles/user-profile/', payload);
@@ -192,6 +202,7 @@ function ProfileView() {
           medical_conditions: updated.medical_conditions || [],
           allergies: updated.allergies || [],
           dietary_restrictions: updated.dietary_restrictions || [],
+          social_religious_constraints: updated.social_religious_constraints || [],
         });
         setSuccessMessage('Profile updated successfully.');
       }
@@ -592,6 +603,43 @@ function ProfileView() {
                                 type="checkbox"
                                 checked={isChecked}
                                 onChange={() => handleCheckboxToggle('dietary_restrictions', item.id)}
+                                className="mt-0.5 accent-[#244234] cursor-pointer"
+                              />
+                              <div>
+                                <span className="font-medium">{item.name}</span>
+                                {item.description && (
+                                  <span className="block text-[11px] text-[#85837C] leading-tight mt-0.5">
+                                    {item.description}
+                                  </span>
+                                )}
+                              </div>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Social & Religious Constraints */}
+                  <div>
+                    <span className="block font-ui text-xs font-semibold uppercase tracking-wider text-[#57554F] mb-2">
+                      Social &amp; Religious Constraints
+                    </span>
+                    {socialReligiousConstraintsList.length === 0 ? (
+                      <p className="font-ui text-xs text-[#85837C]">No social or religious constraints listed.</p>
+                    ) : (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-white border border-[#E5E1D8] p-3 rounded-xs">
+                        {socialReligiousConstraintsList.map((item) => {
+                          const isChecked = watchedSocialReligiousConstraints.includes(item.id);
+                          return (
+                            <label
+                              key={item.id}
+                              className="flex items-start gap-2 text-xs font-ui text-[#181715] cursor-pointer hover:text-[#244234] transition-colors p-1"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => handleCheckboxToggle('social_religious_constraints', item.id)}
                                 className="mt-0.5 accent-[#244234] cursor-pointer"
                               />
                               <div>

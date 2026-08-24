@@ -61,11 +61,22 @@ class DietaryRestriction(models.Model):
         return self.name
 
 
+class SocialReligiousConstraint(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
 class UserProfile(models.Model):
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile"
-    ) # one user have one profile. 
+    )  # one user have one profile.
 
     age = models.PositiveSmallIntegerField()
 
@@ -105,6 +116,9 @@ class UserProfile(models.Model):
 
     dietary_restrictions = models.ManyToManyField(
         DietaryRestriction, blank=True, related_name="profiles"
+    )
+    social_religious_constraints = models.ManyToManyField(
+        SocialReligiousConstraint, blank=True, related_name="profiles"
     )
 
     created_at = models.DateTimeField(auto_now_add=True)

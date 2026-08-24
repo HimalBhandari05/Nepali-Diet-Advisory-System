@@ -4,6 +4,7 @@ from .views import (
     DietaryRestrictionListView,
     MedicalConditionListView,
     UserProfileAPIView,
+    SocialReligiousConstraintListView,
 )
 
 urlpatterns = [
@@ -12,6 +13,11 @@ urlpatterns = [
         "medical-conditions/",
         MedicalConditionListView.as_view(),
         name="medical-conditions",
+    ),
+    path(
+        "social-religious-constraints/",
+        SocialReligiousConstraintListView.as_view(),
+        name="social-religious-constraints",
     ),
     path("allergies/", AllergyListView.as_view(), name="allergies"),
     path(
