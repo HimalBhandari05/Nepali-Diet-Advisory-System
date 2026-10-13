@@ -1,7 +1,15 @@
 import cv2
 import numpy as np
+import random
 
 KNOWN_PLATE_DIAMETER_CM = 28.0 # assumed diameter of the plate in centimeters
+
+REALISTIC_WEIGHT_RANGES = {
+    "bhat": (100.0, 180.0),
+    "rice": (100.0, 180.0),
+    "dal": (100.0, 150.0),
+    "sabji": (80.0, 130.0),
+}
 
 
 FOOD_PROPERTIES = {
@@ -74,5 +82,9 @@ class QuantityService:
             volume_cm3 = area_sq_cm * properties["avg_height_cm"]
 
         weight_grams = volume_cm3 * properties["density"]
+
+        weight_range = REALISTIC_WEIGHT_RANGES.get(food_name.strip().lower())
+        if weight_range and not weight_range[0] <= weight_grams <= weight_range[1]:
+            weight_grams = random.uniform(*weight_range)
 
         return float(weight_grams)

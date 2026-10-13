@@ -1,0 +1,161 @@
+NEPALI DIET ADVISORY SYSTEM
+Final Presentation Summary
+
+1. PROJECT IDEA
+
+This project is a diet and fitness helper made for Nepali users.
+A user can upload a meal photo or type what they ate. The system finds the food, estimates its amount, shows nutrition, and gives personal advice.
+
+It is made for Nepali foods such as bhat, dal, sabji, gundruk, dhindo, chiura, achar, and other local dishes.
+
+2. MAIN PARTS
+
+- Frontend: The screen where users log in, enter their details, upload photos, and see results.
+- Main backend: Manages users, profiles, meals, saved results, and access.
+- AI service: Reads food photos and text, finds food items, estimates amounts, and calculates nutrition.
+- Data and advice: Stores food information and creates advice based on the user's health and goals.
+
+3. PHOTO WORKFLOW
+
+1. The user selects a meal type and uploads a plate photo.
+2. React sends the photo to the Django backend.
+3. Django saves the meal and sends the photo to the FastAPI AI service.
+4. The YOLO model in best.pt looks at the plate.
+5. YOLO finds each food item and creates a mask showing its area.
+6. The quantity service uses the mask area, a 28 cm plate estimate, food shape, height, and density.
+7. The service estimates the weight in grams.
+8. For bhat/rice, the accepted range is 100 to 180 grams.
+9. For dal, the accepted range is 100 to 150 grams.
+10. For sabji, the accepted range is 80 to 130 grams.
+11. If the calculated amount is outside its range, the system selects a random amount inside that range.
+12. The food matcher finds the correct food record and nutrition values.
+13. Calories, protein, carbohydrates, and fat are calculated.
+14. Django saves the result and sends it back to React.
+15. The user sees the food list, quantities, nutrition, and advice.
+
+4. TEXT WORKFLOW
+
+1. The user types a meal description in English or Romanized Nepali.
+2. The AI service cleans the text and finds food names.
+3. It understands amounts such as grams, plates, bowls, cups, and pieces.
+4. It matches each food with the food database.
+5. It calculates nutrition for every item and for the full meal.
+6. The result is saved and shown to the user.
+
+5. PERSONAL ADVICE WORKFLOW
+
+1. The user creates a health profile.
+2. The profile can include age, sex, height, weight, goal, allergies, medical conditions, and food restrictions.
+3. The system combines the profile with the meal nutrition.
+4. Ollama runs a local language model.
+5. The model returns structured advice, warnings, and food alternatives.
+6. The system checks the answer before showing it.
+
+6. WHY THIS PROJECT IS USEFUL
+
+- It understands Nepali foods and eating habits.
+- Photo entry is faster than typing every food item.
+- It gives an estimated amount instead of only naming the food.
+- It gives advice based on the person's own health information.
+- It keeps the main nutrition calculation separate from the language model.
+- It can work with local services and local data.
+
+7. DATA FLOW IN ONE LINE
+
+User -> React -> Django -> FastAPI -> YOLO/food database -> nutrition -> Django database -> React -> user advice
+
+8. COMMON JUDGE QUESTIONS AND SIMPLE ANSWERS
+
+Q: What problem does the project solve?
+A: It helps Nepali users track local meals and receive personal diet advice in one place.
+
+Q: How does the photo feature work?
+A: YOLO finds each food mask, and the quantity service converts the mask area into an estimated weight.
+
+Q: What is YOLO used for?
+A: YOLO finds food items and their areas in the plate photo.
+
+Q: Why are the quantities estimates?
+A: A photo does not show exact weight, so the system uses plate size, area, shape, height, and density.
+
+Q: How did you stop very large quantities?
+A: Rice, dal, and sabji are checked against realistic gram ranges, and an out-of-range result is replaced by a value inside its range.
+
+Q: Why use a random value in the range?
+A: It keeps an unusual model result realistic while avoiding the same fixed amount every time.
+
+Q: Does this replace a doctor or dietitian?
+A: No, it is an advisory tool and should not replace professional medical advice.
+
+Q: How does the system know Nepali food names?
+A: It uses a food database with common names, aliases, and nutrition values.
+
+Q: What is ChromaDB used for?
+A: It helps match user food words with the correct food record.
+
+Q: What does the language model do?
+A: It turns the saved nutrition and health information into easy-to-read advice.
+
+Q: Does the language model calculate nutrition?
+A: No, nutrition is calculated before the language model receives the data.
+
+Q: Why are there two backends?
+A: Django manages the application and database, while FastAPI keeps the AI work separate.
+
+Q: How is user data protected?
+A: Login uses JWT access control, and users can access their own protected data.
+
+Q: What happens when no food is detected?
+A: The system returns an empty food result and zero totals instead of inventing a food item.
+
+Q: Can the project be improved later?
+A: Yes, better training images, plate detection, calibration, and more Nepali food records can improve accuracy.
+
+9. LIBRARIES AND TOOLS USED
+
+- React = for frontend screens
+- Vite = for frontend development
+- Tailwind CSS = for page styling
+- React Router = for page navigation
+- React Hook Form = for form handling
+- Axios = for HTTP requests
+- Django = for main backend
+- Django REST Framework = for REST APIs
+- Simple JWT = for login tokens
+- FastAPI = for AI API
+- Pydantic = for data checking
+- HTTPX = for service requests
+- Ultralytics YOLO = for food detection
+- OpenCV = for image processing
+- Pillow = for opening images
+- NumPy = for mask calculations
+- ChromaDB = for food search
+- LangChain Chroma = for Chroma connection
+- HuggingFace embeddings = for text vectors
+- Sentence Transformers = for food matching
+- RapidFuzz = for similar words
+- SQLite = for application database
+- Ollama = for local AI advice
+- Qwen 2.5 3B = for recommendation text
+- Pandas = for data handling
+- Matplotlib = for charts and plots
+- Seaborn = for data visuals
+- Python = for backend and AI code
+- JavaScript = for frontend code
+- Git = for version control
+
+10. SHORT DEMO ORDER
+
+1. Log in or create a user.
+2. Complete the health profile.
+3. Upload a plate image.
+4. Show detected food names and gram amounts.
+5. Show calories and macronutrients.
+6. Generate the personal recommendation.
+7. Explain the rice, dal, and sabji range check.
+8. Enter a text meal as the second input method.
+9. Show the saved meal history.
+
+11. FINAL POINT
+
+The project joins food image analysis, Nepali food data, nutrition calculation, and personal health advice. Its goal is to make diet tracking easier, more local, and more useful for Nepali users.
